@@ -33,15 +33,54 @@ namespace AXMasterSheet
             ws.Cell(1, 9).Value = "概要";
             ws.Cell(1, 10).Value = "備考";
 
+            ws.Cell(1, 12).Value = "使用";
+            ws.Cell(2, 12).Value = "未使用";
+            ws.Range(1, 12, 2, 12).Style.Font.FontColor = XLColor.White;
+
+            ws.Column(1).Width = 3;
+            ws.Column(2).Width = 12;
+            ws.Column(3).Width = 12;
+            ws.Column(4).Width = 12;
+            ws.Column(5).Width = 12;
+            ws.Column(6).Width = 36;
+            ws.Column(7).Width = 10;
+            ws.Column(8).Width = 5;
+            ws.Column(9).Width = 60;
+            ws.Column(10).Width = 24;
+
             ws.Range(1, 1, 1, 10).Style.Fill.BackgroundColor = XLColor.FromArgb(180,198,231);
+            ws.Range(1, 1, 1, 10).Style
+                .Border.SetTopBorder(XLBorderStyleValues.Thin)
+                .Border.SetLeftBorder(XLBorderStyleValues.Thin)
+                .Border.SetRightBorder(XLBorderStyleValues.Thin)
+                .Border.SetBottomBorder(XLBorderStyleValues.Thin);
+                
 
             for (int i = 2; i < 22; ++i)
             {
                 ws.Cell(i, 1).FormulaA1 = "ROW()-1";
             }
 
-            ws.Columns().AdjustToContents();
-            //ws.Range(1,1,21,10).Style.Font.FontName="Meiryo UI";
+            for (int i = 2; i < 22; ++i)
+            {
+                ws.Cell(i, 1).Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
+
+                for (int j = 1; j < 11; ++j)
+                {
+                    ws.Cell(i, j).Style
+                        .Border.SetRightBorder(XLBorderStyleValues.Thin)
+                        .Border.SetBottomBorder(XLBorderStyleValues.Hair);
+
+                    if (j==7)
+                    {
+                        ws.Cell(i, j).DataValidation.List(ws.Range(1, 12, 2, 12));
+                    }
+                }
+            }
+
+
+
+
 
             try
             {
