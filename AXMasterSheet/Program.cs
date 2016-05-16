@@ -22,6 +22,12 @@ namespace AXMasterSheet
             var wb = new XLWorkbook();
             var ws = wb.Worksheets.Add("List");
 
+            //Headerのセル範囲を指定
+            var headrange = ws.Range(1, 1, 1, 10);
+
+            //サンプル行の追加数を指定
+            int intSampleRowLines = 20;
+
             ws.Cell(1, 1).Value = "No.";
             ws.Cell(1, 2).Value = "タブ1";
             ws.Cell(1, 3).Value = "タブ2";
@@ -48,20 +54,20 @@ namespace AXMasterSheet
             ws.Column(9).Width = 60;
             ws.Column(10).Width = 24;
 
-            ws.Range(1, 1, 1, 10).Style.Fill.BackgroundColor = XLColor.FromArgb(180,198,231);
-            ws.Range(1, 1, 1, 10).Style
+            headrange.Style.Fill.BackgroundColor = XLColor.FromArgb(180,198,231);
+            headrange.Style
                 .Border.SetTopBorder(XLBorderStyleValues.Thin)
                 .Border.SetLeftBorder(XLBorderStyleValues.Thin)
                 .Border.SetRightBorder(XLBorderStyleValues.Thin)
                 .Border.SetBottomBorder(XLBorderStyleValues.Thin);
                 
 
-            for (int i = 2; i < 22; ++i)
+            for (int i = 2; i < intSampleRowLines + 2; ++i)
             {
                 ws.Cell(i, 1).FormulaA1 = "ROW()-1";
             }
 
-            for (int i = 2; i < 22; ++i)
+            for (int i = 2; i < intSampleRowLines + 2; ++i)
             {
                 ws.Cell(i, 1).Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
 
@@ -77,10 +83,6 @@ namespace AXMasterSheet
                     }
                 }
             }
-
-
-
-
 
             try
             {
