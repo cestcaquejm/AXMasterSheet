@@ -50,10 +50,6 @@ namespace AXMasterSheet
                 dtUse = SelectUse(dtMaster);
             }
 
-            int intUseCount = dtUse.Rows.Count;
-
-            AddLineNum(wsMaster);
-
             for (int i = 1; i <= dtUse.Rows.Count; i++)
             {
                 wsMaster.Cell(1, i + 1).Value = dtUse.Rows[i - 1][1];
@@ -71,15 +67,25 @@ namespace AXMasterSheet
                 }
             }
 
-            if (dtUse.Select("Tab2 <> ''").Length < 0)
+            int intMinusRows = 0;
+
+            if (dtUse.Select("Tab4 <> ''").Length == 0)
             {
+                wsMaster.Row(4).Delete();
+                intMinusRows += 1;
             }
-            if (dtUse.Select("Tab3 <> ''").Length < 0)
+            if (dtUse.Select("Tab3 <> ''").Length == 0)
             {
+                wsMaster.Row(3).Delete();
+                intMinusRows += 1;
             }
-            if (dtUse.Select("Tab4 <> ''").Length < 0)
+            if (dtUse.Select("Tab2 <> ''").Length == 0)
             {
+                wsMaster.Row(2).Delete();
+                intMinusRows += 1;
             }
+
+            AddLineNum(wsMaster, intMinusRows);
 
             wsMaster.ColumnsUsed().AdjustToContents();
 
@@ -175,9 +181,9 @@ namespace AXMasterSheet
             return dtUse;
         }
 
-        static private IXLWorksheet AddLineNum(IXLWorksheet ws, int intLines = 50)
+        static private IXLWorksheet AddLineNum(IXLWorksheet ws, int intMinusRows, int intLines = 50)
         {
-            int intStartRow = 5;
+            int intStartRow = 5 - intMinusRows;
             string strFormula = "ROW() -" + intStartRow.ToString();
 
             ws.Cell(intStartRow, 1).Value = "No.";
