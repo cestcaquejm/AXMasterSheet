@@ -10,41 +10,63 @@ namespace AXMasterSheet
 {
     class SortSheet
     {
-        static public int Sort(string strFileName)
+        static public int Sort(string strFilePath, string strMode = "A")
         {
-            Console.WriteLine("Read .xlsx file.");
+            const string strMasterSheetName = "Master";
+
+            Console.Write("Read .xlsx file...");
+
             var wb = new XLWorkbook();
             try
             {
-                wb = new XLWorkbook(strFileName);
+                wb = new XLWorkbook(strFilePath);
+                Console.WriteLine("Sucess!");
             }
             catch
             {
-                Console.WriteLine("Reading xlsx file was failed.");
-                return 1;
+                Console.WriteLine("Failed.\nReading xlsx file was failed.");
+                return -1;
             }
 
-            const string strListSheetName = "List";
-            const string strMasterSheetName = "Master";
-
-            var wsList = wb.Worksheet(strListSheetName);
-           
             try
             {
                 wb.Worksheet(strMasterSheetName).Delete();
-                Console.WriteLine("Master sheet was deleted.");
+                Console.WriteLine("Current " + strMasterSheetName + " sheet was deleted.");
             }
             catch
             {
+                return -1;
             }
 
             var wsMaster = wb.Worksheets.Add(strMasterSheetName);
-            Console.WriteLine("New master sheet was added.");
+            Console.WriteLine("New Master sheet was added.");
+
+            DataTable dt = GetDataTabe(strFilePath, wb);
+
+            for (int i = 1; i <= dt.Rows.Count; i++)
+            {
+                wsMaster.Cell(i, 1).Value = dt.Rows[i - 1][0];
+                wsMaster.Cell(i, 2).Value = dt.Rows[i - 1][1];
+                wsMaster.Cell(i, 3).Value = dt.Rows[i - 1][2];
+                wsMaster.Cell(i, 4).Value = dt.Rows[i - 1][3];
+                wsMaster.Cell(i, 5).Value = dt.Rows[i - 1][4];
+                wsMaster.Cell(i, 6).Value = dt.Rows[i - 1][5];
+                wsMaster.Cell(i, 7).Value = dt.Rows[i - 1][6];
+            }
+
+            wb.SaveAs(strFilePath);
+
+            return 0;
+        }
+
+        static private DataTable GetDataTabe(string strFilePath, XLWorkbook wb)
+        {
+            DataTable dt = new DataTable();
+
+            const string strListSheetName = "List";
+            var wsList = wb.Worksheet(strListSheetName);
 
             int intListMaxRow = wsList.RowsUsed().Count();
-
-            DataSet ds = new DataSet();
-            DataTable dt = new DataTable();
 
             dt.Columns.Add("Numb"); //[0]
             dt.Columns.Add("Tab1"); //[1]
@@ -58,7 +80,6 @@ namespace AXMasterSheet
             string strCopyValue2 = "";
             string strCopyValue3 = "";
             string strCopyValue4 = "";
-
 
             for (int i = 2; i <= intListMaxRow; i++)
             {
@@ -86,28 +107,15 @@ namespace AXMasterSheet
                 dr[4] = strCopyValue4;
 
                 dr["Item"] = wsList.Cell(i, 6).Value;
-                dr["Use"]  = wsList.Cell(i, 7).Value;
+                dr["Use"] = wsList.Cell(i, 7).Value;
 
                 dt.Rows.Add(dr);
             }
 
-            for (int i = 1; i <= dt.Rows.Count; i++)
-            {
-                wsMaster.Cell(i, 1).Value = dt.Rows[i - 1][0];
-                wsMaster.Cell(i, 2).Value = dt.Rows[i - 1][1];
-                wsMaster.Cell(i, 3).Value = dt.Rows[i - 1][2];
-                wsMaster.Cell(i, 4).Value = dt.Rows[i - 1][3];
-                wsMaster.Cell(i, 5).Value = dt.Rows[i - 1][4];
-                wsMaster.Cell(i, 6).Value = dt.Rows[i - 1][5];
-                wsMaster.Cell(i, 7).Value = dt.Rows[i - 1][6];
-            }
-
-            wb.SaveAs(strFileName);
-
-            return 0;
+            return dt;
         }
 
-        static private void CopyCell(string strColumnValue,ref string strCopyValue, string strCheckColumnValue, string strCheckCopyValue)
+        static private void CopyCell(string strColumnValue, ref string strCopyValue, string strCheckColumnValue, string strCheckCopyValue)
         {
             if (strCheckColumnValue == strCheckCopyValue)
             {
