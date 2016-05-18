@@ -50,7 +50,9 @@ namespace AXMasterSheet
                 dtUse = SelectUse(dtMaster);
             }
 
-            for (int i = 1; i <= dtUse.Rows.Count; i++)
+            int intUseRow = dtUse.Rows.Count;
+
+            for (int i = 1; i <= intUseRow; i++)
             {
                 wsMaster.Cell(1, i + 1).Value = dtUse.Rows[i - 1][1];
                 wsMaster.Cell(2, i + 1).Value = dtUse.Rows[i - 1][2];
@@ -66,6 +68,16 @@ namespace AXMasterSheet
                     wsMaster.Cell(5, i + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(217, 217, 217);
                 }
             }
+
+            WriteColumnLines(wsMaster, 1, intUseRow);
+            WriteColumnLines(wsMaster, 2, intUseRow);
+            WriteColumnLines(wsMaster, 3, intUseRow);
+            WriteColumnLines(wsMaster, 4, intUseRow);
+
+            wsMaster.Range(1, 1, 1, intUseRow + 1).Style.Border.SetTopBorder(XLBorderStyleValues.Thin);
+            wsMaster.Range(1, 1, 4, 1).Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
+            wsMaster.Range(1, intUseRow + 1, 4, intUseRow + 1).Style.Border.SetRightBorder(XLBorderStyleValues.Thin);
+            wsMaster.Range(4, 1, 4, intUseRow + 1).Style.Border.SetBottomBorder(XLBorderStyleValues.Thin);
 
             int intMinusRows = 0;
 
@@ -194,6 +206,27 @@ namespace AXMasterSheet
                 ws.Cell(i + intStartRow, 1).FormulaA1 = strFormula;
             }
             return ws;
+        }
+
+        static private void WriteColumnLines(IXLWorksheet ws, int intEffectRow, int intMaxRow)
+        {
+            string strBoarderCheck = "";
+            for (int i = 2; i <= intMaxRow + 1; i++)
+            {
+                string strCurrentRowValue = ws.Cell(intEffectRow, i).Value.ToString();
+
+                if (strCurrentRowValue != strBoarderCheck)
+                {
+                    ws.Range(intEffectRow, i, 4, i).Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
+                }
+
+                if (strCurrentRowValue != "")
+                {
+                    ws.Cell(intEffectRow, i).Style.Border.SetTopBorder(XLBorderStyleValues.Thin);
+                }
+
+                strBoarderCheck = strCurrentRowValue;
+            }
         }
     }
 }
