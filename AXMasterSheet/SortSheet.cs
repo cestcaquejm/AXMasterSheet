@@ -12,8 +12,6 @@ namespace AXMasterSheet
     {
         static public int Sort(string strFilePath, string strMode = "A")
         {
-            const string strMasterSheetName = "Master";
-
             Console.Write("Read .xlsx file...");
 
             var wb = new XLWorkbook();
@@ -28,6 +26,8 @@ namespace AXMasterSheet
                 return -1;
             }
 
+            const string strMasterSheetName = "Master";
+
             try
             {
                 wb.Worksheet(strMasterSheetName).Delete();
@@ -41,18 +41,47 @@ namespace AXMasterSheet
             var wsMaster = wb.Worksheets.Add(strMasterSheetName);
             Console.WriteLine("New Master sheet was added.");
 
-            DataTable dt = GetDataTabe(strFilePath, wb);
+            DataTable dtMaster = GetDataTabe(strFilePath, wb);
+            DataTable dtUse = dtMaster;
 
-            for (int i = 1; i <= dt.Rows.Count; i++)
+            //使用する項目のみに絞り込む
+            if (strMode == "U")
             {
-                wsMaster.Cell(i, 1).Value = dt.Rows[i - 1][0];
-                wsMaster.Cell(i, 2).Value = dt.Rows[i - 1][1];
-                wsMaster.Cell(i, 3).Value = dt.Rows[i - 1][2];
-                wsMaster.Cell(i, 4).Value = dt.Rows[i - 1][3];
-                wsMaster.Cell(i, 5).Value = dt.Rows[i - 1][4];
-                wsMaster.Cell(i, 6).Value = dt.Rows[i - 1][5];
-                wsMaster.Cell(i, 7).Value = dt.Rows[i - 1][6];
+                dtUse = SelectUse(dtMaster);
             }
+
+            int intUseCount = dtUse.Rows.Count;
+
+            AddLineNum(wsMaster);
+
+            for (int i = 1; i <= dtUse.Rows.Count; i++)
+            {
+                wsMaster.Cell(1, i + 1).Value = dtUse.Rows[i - 1][1];
+                wsMaster.Cell(2, i + 1).Value = dtUse.Rows[i - 1][2];
+                wsMaster.Cell(3, i + 1).Value = dtUse.Rows[i - 1][3];
+                wsMaster.Cell(4, i + 1).Value = dtUse.Rows[i - 1][4];
+                wsMaster.Cell(5, i + 1).Value = dtUse.Rows[i - 1][5];
+                if (dtUse.Rows[i - 1][6].ToString() == "使用")
+                {
+                    wsMaster.Cell(5, i + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(221, 235, 247);
+                }
+                else
+                {
+                    wsMaster.Cell(5, i + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(217, 217, 217);
+                }
+            }
+
+            if (dtUse.Select("Tab2 <> ''").Length < 0)
+            {
+            }
+            if (dtUse.Select("Tab3 <> ''").Length < 0)
+            {
+            }
+            if (dtUse.Select("Tab4 <> ''").Length < 0)
+            {
+            }
+
+            wsMaster.ColumnsUsed().AdjustToContents();
 
             wb.SaveAs(strFilePath);
 
@@ -128,5 +157,37 @@ namespace AXMasterSheet
             }
         }
 
+        static private DataTable SelectUse(DataTable dtMaster)
+        {
+            DataTable dtUse = dtMaster.Clone();
+
+            DataRow[] dr = dtMaster.Select("Use='使用'");
+
+            foreach (DataRow rows in dr)
+            {
+                DataRow drClone = dtUse.NewRow();
+
+                drClone.ItemArray = rows.ItemArray;
+
+                dtUse.Rows.Add(drClone);
+            }
+
+            return dtUse;
+        }
+
+        static private IXLWorksheet AddLineNum(IXLWorksheet ws, int intLines = 50)
+        {
+            int intStartRow = 5;
+            string strFormula = "ROW() -" + intStartRow.ToString();
+
+            ws.Cell(intStartRow, 1).Value = "No.";
+            ws.Cell(intStartRow, 1).Style.Fill.BackgroundColor = XLColor.FromArgb(221, 235, 247);
+
+            for (int i = 1; i <= intLines; i++)
+            {
+                ws.Cell(i + intStartRow, 1).FormulaA1 = strFormula;
+            }
+            return ws;
+        }
     }
 }

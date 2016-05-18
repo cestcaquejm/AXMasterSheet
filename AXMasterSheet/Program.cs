@@ -9,10 +9,11 @@ namespace AXMasterSheet
 {
     class Program
     {
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             GenerateSheet.Generate("AXMasterSheet");
-            SortSheet.Sort("pythontest.xlsx");        
+            int intReturn = SortSheet.Sort("pythontest.xlsx", "A");
+            return intReturn;
         }
     }
 }
