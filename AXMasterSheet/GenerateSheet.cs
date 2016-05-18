@@ -9,18 +9,15 @@ namespace AXMasterSheet
 {
     class GenerateSheet
     {
-        static public void Generate(string strSheetName)
+        static public void Generate(string strFileName = "AXMasterSheet", int intSampleRowLines = 20)
         {
             XLWorkbook.DefaultStyle.Font.FontName = "Meiryo UI";
-            string strXLFileName = strSheetName + ".xlsx";
+            string strXLFileName = strFileName + ".xlsx";
             var wb = new XLWorkbook();
             var ws = wb.Worksheets.Add("List");
 
             //Headerのセル範囲を指定
             var headrange = ws.Range(1, 1, 1, 10);
-
-            //サンプル行の追加数を指定
-            int intSampleRowLines = 20;
 
             ws.Cell(1, 1).Value = "No.";
             ws.Cell(1, 2).Value = "タブ1";
@@ -77,6 +74,8 @@ namespace AXMasterSheet
                     }
                 }
             }
+
+            ws.Range(intSampleRowLines + 1, 1, intSampleRowLines + 1, 10).Style.Border.SetBottomBorder(XLBorderStyleValues.Thin);
 
             try
             {
