@@ -12,6 +12,9 @@ namespace AXMasterSheet
     {
         static public int Sort(string strFilePath, string strMode = "A")
         {
+            XLColor xlcBlue = XLColor.FromArgb(221, 235, 247);
+            XLColor xlcGlay = XLColor.FromArgb(217, 217, 217);
+
             Console.Write("Read .xlsx file...");
 
             var wb = new XLWorkbook();
@@ -35,7 +38,6 @@ namespace AXMasterSheet
             }
             catch
             {
-                return -1;
             }
 
             var wsMaster = wb.Worksheets.Add(strMasterSheetName);
@@ -52,6 +54,7 @@ namespace AXMasterSheet
 
             int intUseRow = dtUse.Rows.Count;
 
+            //ヘッダーの生成
             for (int i = 1; i <= intUseRow; i++)
             {
                 wsMaster.Cell(1, i + 1).Value = dtUse.Rows[i - 1][1];
@@ -59,26 +62,53 @@ namespace AXMasterSheet
                 wsMaster.Cell(3, i + 1).Value = dtUse.Rows[i - 1][3];
                 wsMaster.Cell(4, i + 1).Value = dtUse.Rows[i - 1][4];
                 wsMaster.Cell(5, i + 1).Value = dtUse.Rows[i - 1][5];
+
                 if (dtUse.Rows[i - 1][6].ToString() == "使用")
                 {
-                    wsMaster.Cell(5, i + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(221, 235, 247);
+                    wsMaster.Cell(5, i + 1).Style.Fill.BackgroundColor = xlcBlue;
                 }
                 else
                 {
-                    wsMaster.Cell(5, i + 1).Style.Fill.BackgroundColor = XLColor.FromArgb(217, 217, 217);
+                    wsMaster.Cell(5, i + 1).Style.Fill.BackgroundColor = xlcGlay;
                 }
             }
 
+            //ヘッダーの塗りつぶし
+            for (int i = 1; i <= intUseRow + 1; i++)
+            {
+                for (int j = 1; j <= 4; j++)
+                {
+                    wsMaster.Cell(j, i).Style.Fill.BackgroundColor = xlcBlue;
+                }
+            }
+
+            //ヘッダーの内部の枠線追加
             WriteColumnLines(wsMaster, 1, intUseRow);
             WriteColumnLines(wsMaster, 2, intUseRow);
             WriteColumnLines(wsMaster, 3, intUseRow);
             WriteColumnLines(wsMaster, 4, intUseRow);
 
+            wsMaster.Range(5,1,5,intUseRow+1).Style
+                .Border.SetTopBorder(XLBorderStyleValues.Thin)
+                .Border.SetLeftBorder(XLBorderStyleValues.Thin)
+                .Border.SetRightBorder(XLBorderStyleValues.Thin)
+                .Border.SetBottomBorder(XLBorderStyleValues.Thin);
+
+            //ヘッダーの外周の枠線追加
             wsMaster.Range(1, 1, 1, intUseRow + 1).Style.Border.SetTopBorder(XLBorderStyleValues.Thin);
             wsMaster.Range(1, 1, 4, 1).Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
-            wsMaster.Range(1, intUseRow + 1, 4, intUseRow + 1).Style.Border.SetRightBorder(XLBorderStyleValues.Thin);
+            wsMaster.Range(1, intUseRow + 2, 4, intUseRow + 2).Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
             wsMaster.Range(4, 1, 4, intUseRow + 1).Style.Border.SetBottomBorder(XLBorderStyleValues.Thin);
 
+            //ヘッダーのセル結合
+            MergeCells(wsMaster, intUseRow, 1);
+            MergeCells(wsMaster, intUseRow, 2);
+            MergeCells(wsMaster, intUseRow, 3);
+            MergeCells(wsMaster, intUseRow, 4);
+
+            
+
+            //不要なヘッダー行の削除
             int intMinusRows = 0;
 
             if (dtUse.Select("Tab4 <> ''").Length == 0)
@@ -97,8 +127,10 @@ namespace AXMasterSheet
                 intMinusRows += 1;
             }
 
+            //行番号追加
             AddLineNum(wsMaster, intMinusRows);
 
+            //列幅自動調整
             wsMaster.ColumnsUsed().AdjustToContents();
 
             wb.SaveAs(strFilePath);
@@ -211,6 +243,9 @@ namespace AXMasterSheet
         static private void WriteColumnLines(IXLWorksheet ws, int intEffectRow, int intMaxRow)
         {
             string strBoarderCheck = "";
+
+            ws.Cell(intEffectRow, 2).Style.Border.SetLeftBorder(XLBorderStyleValues.Thin);
+
             for (int i = 2; i <= intMaxRow + 1; i++)
             {
                 string strCurrentRowValue = ws.Cell(intEffectRow, i).Value.ToString();
@@ -226,6 +261,25 @@ namespace AXMasterSheet
                 }
 
                 strBoarderCheck = strCurrentRowValue;
+            }
+        }
+
+        static private void MergeCells(IXLWorksheet ws, int intUseRow, int intCheckRow)
+        {
+            int intCount = 0;
+
+            //ヘッダーのセル結合
+            for (int i = 2; i <= intUseRow + 2; i++)
+            {
+                if (ws.Cell(intCheckRow, i).Style.Border.LeftBorder == XLBorderStyleValues.Thin)
+                {
+                    ws.Range(intCheckRow, i - intCount, intCheckRow, i - 1).Merge();
+                    intCount = 1;
+                }
+                else
+                {
+                    intCount += 1;
+                }
             }
         }
     }
