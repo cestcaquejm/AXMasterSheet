@@ -128,10 +128,13 @@ namespace AXMasterSheet
             }
 
             //行番号追加
-            AddLineNum(wsMaster, intMinusRows);
+            AddLineNum(wsMaster, intMinusRows, intUseRow);
 
-            //列幅自動調整
+            //列幅自動調整 - 日本語文字列だと列幅調整がうまく働かない?
             wsMaster.ColumnsUsed().AdjustToContents();
+
+            //未使用列の非表示
+            //HideLine(wsMaster,intUseRow, intMinusRows);
 
             wb.SaveAs(strFilePath);
 
@@ -225,7 +228,7 @@ namespace AXMasterSheet
             return dtUse;
         }
 
-        static private IXLWorksheet AddLineNum(IXLWorksheet ws, int intMinusRows, int intLines = 50)
+        static private IXLWorksheet AddLineNum(IXLWorksheet ws, int intMinusRows, int intUseRow, int intLines = 50)
         {
             int intStartRow = 5 - intMinusRows;
             string strFormula = "ROW() -" + intStartRow.ToString();
@@ -236,6 +239,17 @@ namespace AXMasterSheet
             for (int i = 1; i <= intLines; i++)
             {
                 ws.Cell(i + intStartRow, 1).FormulaA1 = strFormula;
+
+                for (int j = 1; j <= intUseRow + 1; j++)
+                {
+                    ws.Cell(i + intStartRow, j).Style
+                        .Border.SetLeftBorder(XLBorderStyleValues.Thin)
+                        .Border.SetRightBorder(XLBorderStyleValues.Thin)
+                        .Border.SetBottomBorder(XLBorderStyleValues.Hair);
+                }
+
+                ws.Range(intStartRow + intLines, 1, intStartRow + intLines, 1 + intUseRow).Style.Border.SetBottomBorder(XLBorderStyleValues.Thin);
+
             }
             return ws;
         }
@@ -281,6 +295,20 @@ namespace AXMasterSheet
                     intCount += 1;
                 }
             }
+        }
+
+        static private void HideLine(IXLWorksheet ws, int intUseRow, int intMinusRows)
+        {
+            int intStartRow = 5 - intMinusRows;
+
+            for (int i = 1; i <= intUseRow + 1; i++)
+            {
+                if (ws.Cell(intStartRow,i).Style.Fill.BackgroundColor == XLColor.FromArgb(217, 217, 217))
+                {
+                    ws.Column(i).Hide();
+                }
+            }
+
         }
     }
 }

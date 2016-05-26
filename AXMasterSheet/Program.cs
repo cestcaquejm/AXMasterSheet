@@ -12,7 +12,7 @@ namespace AXMasterSheet
         static int Main(string[] args)
         {
             GenerateSheet.Generate("AXMasterSheet");
-            int intReturn = SortSheet.Sort("pythontest.xlsx", "A");
+            int intReturn = SortSheet.Sort("pythontest.xlsx", "U");
             return intReturn;
         }
     }
