@@ -11,8 +11,9 @@ namespace AXMasterSheet
     {
         static int Main(string[] args)
         {
-            GenerateSheet.Generate("AXMasterSheet");
-            int intReturn = SortSheet.Sort("pythontest.xlsx", "U");
+            GenerateSheet gs = new GenerateSheet();
+            gs.Generate("AXMasterSheet");
+            int intReturn = SortSheet.Sort("pythontest.xlsx", "A");
             return intReturn;
         }
     }
